@@ -6,6 +6,7 @@ from figure import create_figure
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from update_data import update_dataset
+from dash.exceptions import PreventUpdate
 
 load_dotenv()
 
@@ -349,6 +350,16 @@ def filter_data(df, start_date, end_date, min_mag, region):
 
     filtered = df.copy()
 
+    # Handle None values
+    if start_date is None:
+        start_date = filtered["date"].min()
+
+    if end_date is None:
+        end_date = filtered["date"].max()
+
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
     filtered = filtered[
         (filtered["date"] >= start_date) &
         (filtered["date"] <= end_date)
@@ -375,7 +386,10 @@ def filter_data(df, start_date, end_date, min_mag, region):
 
 )
 
-def update_graph(start_date,end_date,min_mag,region):
+def update_graph(start_date, end_date, min_mag, region):
+
+    if start_date is None or end_date is None:
+        raise PreventUpdate
 
     filtered = filter_data(
         df,
@@ -403,6 +417,9 @@ def update_graph(start_date,end_date,min_mag,region):
 )
 
 def update_table(start_date, end_date, min_mag, region, clickData):
+    if start_date is None or end_date is None:
+        raise PreventUpdate
+    
     if clickData is None:
         return (
             "Click a point on the graph",
