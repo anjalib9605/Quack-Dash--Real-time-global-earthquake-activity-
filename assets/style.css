@@ -1,0 +1,150 @@
+/*DROPDOWNS*/
+
+/* Dropdown button */
+.dash-dropdown button {
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* Selected value */
+.dash-dropdown-value,
+.dash-dropdown-value-item,
+.dash-dropdown-value-item span,
+.dash-dropdown-trigger {
+    color: black !important;
+}
+
+/* Dropdown menu */
+[role="listbox"]{
+    background:white !important;
+    border:1px solid #ced4da !important;
+}
+
+/* Options */
+[role="option"]{
+    background:white !important;
+    color:black !important;
+}
+
+/* Hovered option */
+[role="option"]:hover{
+    background:#f1f3f5 !important;
+}
+
+/* Selected option */
+[aria-selected="true"]{
+    background:#e9ecef !important;
+}
+
+
+/*DATE PICKER INPUT*/
+
+.dash-datepicker-input-wrapper{
+    background:white !important;
+    border:1px solid #ced4da !important;
+    border-radius:6px;
+}
+
+.dash-datepicker-input{
+    background:white !important;
+    color:black !important;
+    border:none !important;
+    font-weight:500;
+}
+
+.dash-datepicker-input::placeholder{
+    color:#6c757d !important;
+}
+
+/* Arrow between dates */
+.dash-datepicker-range-arrow{
+    color:black !important;
+    fill:black !important;
+}
+
+
+/*CALENDAR POPUP*/
+
+.dash-datepicker-calendar-wrapper{
+    background:#f8f9fa !important;
+}
+
+
+/* Month selector */
+
+.dash-datepicker-month-nav{
+    background:white !important;
+    color:black !important;
+    border:1px solid #ced4da !important;
+    border-radius:6px;
+}
+
+.dash-datepicker-month-nav *{
+    color:black !important;
+}
+
+
+/*YEAR INPUT*/
+
+.dash-input-container{
+    background:white !important;
+    border:1px solid #ced4da !important;
+    border-radius:6px;
+}
+
+.dash-input-element{
+    background:white !important;
+    color:black !important;
+    border:none !important;
+    font-weight:500;
+}
+
+.dash-input-stepper{
+    background:white !important;
+    color:black !important;
+    border-left:1px solid #ced4da !important;
+}
+
+.dash-input-stepper:hover{
+    background:#f1f3f5 !important;
+}
+
+
+/*CALENDAR*/
+
+.CalendarMonth,
+.DayPicker{
+    background:#f8f9fa !important;
+}
+
+.CalendarMonth_caption{
+    color:black !important;
+}
+
+.CalendarMonth_table th{
+    color:#495057 !important;
+}
+
+.CalendarDay{
+    background:#ffffff !important;
+    color:black !important;
+    border:1px solid #dee2e6 !important;
+}
+
+.CalendarDay:hover{
+    background:#e9ecef !important;
+}
+
+.CalendarDay__selected,
+.CalendarDay__selected:hover{
+    background:#0d6efd !important;
+    color:white !important;
+}
+
+
+/*LABELS*/
+
+label{
+    font-weight:600;
+}

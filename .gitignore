@@ -1,0 +1,12 @@
+# Virtual environment
+.quake_venv/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code settings (optional)
+.vscode/
