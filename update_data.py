@@ -116,9 +116,8 @@ def update_dataset():
         data = response.json()
 
         if not data["features"]:
-
             print("No new earthquakes found.")
-            return
+            return 0
 
         print(f"Found {len(data['features'])} new earthquakes.")
 
@@ -193,8 +192,8 @@ def update_dataset():
             if_exists="append",
             index=False
         )
-
         print(f"Inserted {len(new_df)} new earthquakes.")
+        return len(new_df)
 
     except Exception as e:
 

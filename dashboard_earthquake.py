@@ -1,10 +1,11 @@
 import pandas as pd
 import os
-from dash import Dash, html, dcc, Input, Output, dash_table
+from dash import Dash, html, dcc, Input, Output, State, dash_table
 import dash_bootstrap_components as dbc
 from figure import create_figure
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
+from update_data import update_dataset
 
 load_dotenv()
 
@@ -45,26 +46,80 @@ app.layout = dbc.Container(
 
         dbc.Row(
 
+            [
+
+                dbc.Col(
+
+                    html.Div([
+
+                        html.H2(
+                            "Quack 🌍 Dash",
+                            style={
+                                "marginTop":"15px",
+                                "marginBottom":"5px"
+                            }
+                        ),
+
+                        html.P(
+                            "Real-time global earthquake activity | USGS data",
+                            style={
+                                "color":"#b0b0b0",
+                                "fontSize":"16px"
+                            }
+                        )
+
+                    ]),
+
+                    width=9
+
+                ),
+
+                dbc.Col(
+
+                    [
+
+                        dbc.Button(
+
+                            "🔄 Fetch Latest Data",
+
+                            id="refresh-data",
+
+                            color="primary",
+
+                            style={
+
+                                "marginTop":"20px",
+
+                                "float":"right"
+
+                            }
+
+                        )
+
+                    ],
+
+                    width=3
+
+                )
+
+            ],
+
+            align="center"
+
+        ),
+        dbc.Row(
+
             dbc.Col(
-                html.Div([
-                    html.H2(
-                        "Quack 🌍 Dash",
-                        style={
-                            "textAlign": "center",
-                            "marginTop": "15px",
-                            "marginBottom": "20px"
-                        }
-                    ),
-                    html.P(
-                        "Real-time global earthquake activity | USGS data",
-                        style={
-                            "textAlign": "center",
-                            "color": "#b0b0b0",
-                            "fontSize": "16px",
-                            "marginBottom": "20px"
-                        }
-                    )
-                ])
+
+                html.Div(
+                    id="refresh-message",
+                    style={
+                        "marginBottom": "15px",
+                        "color": "#90ee90",
+                        "fontWeight": "bold"
+                    }
+                )
+
             )
 
         ),
@@ -72,6 +127,7 @@ app.layout = dbc.Container(
         dbc.Card(
 
             dbc.CardBody(
+
 
                 dbc.Row([
 
@@ -413,6 +469,28 @@ def update_table(start_date, end_date, min_mag, region, clickData):
         ].to_dict("records")
 
     )
+
+@app.callback(
+    Output("refresh-message", "children"),
+    Input("refresh-data", "n_clicks"),
+    prevent_initial_call=True
+)
+def refresh_database(n):
+
+    try:
+
+        inserted = update_dataset()
+
+        if inserted == 0:
+            return "ℹ No new earthquakes found."
+
+        return (
+            f"✔ Added {inserted} new earthquake(s). "
+            "Refresh the page to view them."
+        )
+
+    except Exception as e:
+        return f"❌ Update failed: {e}"
 
 # ==========================================================
 # Run
