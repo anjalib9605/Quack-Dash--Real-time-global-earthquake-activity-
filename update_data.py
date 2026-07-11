@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-
+print("Updater DB:", DATABASE_URL[:40])
 # ==========================================================
 # Load & Update Dataset
 # ==========================================================

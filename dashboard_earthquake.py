@@ -7,23 +7,71 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from update_data import update_dataset
 from dash.exceptions import PreventUpdate
+from functools import lru_cache
+from zoneinfo import ZoneInfo
 
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+
 # ==========================================================
 # Load Dataset
 # ==========================================================
 
 engine = create_engine(DATABASE_URL)
 
-df = pd.read_sql(
-    "SELECT * FROM earthquakes",
-    engine
-)
+import time
 
-df["time"] = pd.to_datetime(df["time"])
-df["date"] = pd.to_datetime(df["date"])
+@lru_cache(maxsize=1)
+def load_data():
+
+    t0 = time.time()
+
+    df = pd.read_sql(
+        """ SELECT
+        time,
+        date,
+        latitude,
+        longitude,
+        depth,
+        mag,
+        place,
+        country
+    FROM earthquakes""", engine
+    )
+
+    print(f"Read SQL in {time.time() - t0:.2f} sec")
+
+    t1 = time.time()
+
+    df["time"] = pd.to_datetime(df["time"])
+    df["date"] = pd.to_datetime(df["date"])
+
+    print(f"Converted dates in {time.time() - t1:.2f} sec")
+
+    print(f"Total load time: {time.time() - t0:.2f} sec")
+
+    return df
+
+
+def get_last_updated():
+
+    latest = pd.read_sql(
+        "SELECT MAX(time) AS latest FROM earthquakes",
+        engine
+    )["latest"][0]
+
+    print("Latest from DB:", latest)
+
+    latest = (
+        pd.to_datetime(latest)
+        .tz_localize("UTC")
+        .tz_convert(ZoneInfo("Asia/Kolkata"))
+    )
+
+    print("Converted:", latest)
+
+    return latest.strftime("%d %b %Y • %I:%M %p IST")
 
 # ==========================================================
 # Dash App
@@ -39,7 +87,11 @@ server = app.server
 # Layout
 # ==========================================================
 
-app.layout = dbc.Container(
+def serve_layout():
+  
+  df = load_data()
+
+  return dbc.Container(
 
     fluid=True,
 
@@ -56,16 +108,16 @@ app.layout = dbc.Container(
                         html.H2(
                             "Quack 🌍 Dash",
                             style={
-                                "marginTop":"15px",
-                                "marginBottom":"5px"
+                                "marginTop": "15px",
+                                "marginBottom": "5px"
                             }
                         ),
 
                         html.P(
                             "Real-time global earthquake activity | USGS data",
                             style={
-                                "color":"#b0b0b0",
-                                "fontSize":"16px"
+                                "color": "#b0b0b0",
+                                "fontSize": "16px"
                             }
                         )
 
@@ -88,18 +140,37 @@ app.layout = dbc.Container(
                             color="primary",
 
                             style={
+                                "marginTop": "20px",
+                                "width": "225px"
+                            }
 
-                                "marginTop":"20px",
+                        ),
 
-                                "float":"right"
+                        html.Div(
 
+                            f"🕒 Last Update: {get_last_updated()}",
+
+                            id="last-updated",
+
+                            style={
+                                "marginTop": "8px",
+                                "width": "225px",
+                                "textAlign": "right",
+                                "fontSize": "12px",
+                                "color": "#b0b0b0"
                             }
 
                         )
 
                     ],
 
-                    width=3
+                    width=3,
+
+                    style={
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "alignItems": "flex-end"
+                    }
 
                 )
 
@@ -345,17 +416,12 @@ app.layout = dbc.Container(
 
 )
 
+app.layout = serve_layout
+
 
 def filter_data(df, start_date, end_date, min_mag, region):
 
     filtered = df.copy()
-
-    # Handle None values
-    if start_date is None:
-        start_date = filtered["date"].min()
-
-    if end_date is None:
-        end_date = filtered["date"].max()
 
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
@@ -390,6 +456,8 @@ def update_graph(start_date, end_date, min_mag, region):
 
     if start_date is None or end_date is None:
         raise PreventUpdate
+
+    df = load_data()
 
     filtered = filter_data(
         df,
@@ -426,6 +494,9 @@ def update_table(start_date, end_date, min_mag, region, clickData):
             "",
             []
         )
+    
+    df = load_data()
+
     # Apply the same filters as the graph
     filtered = filter_data(
         df,
@@ -489,6 +560,7 @@ def update_table(start_date, end_date, min_mag, region, clickData):
 
 @app.callback(
     Output("refresh-message", "children"),
+    Output("last-updated", "children"),
     Input("refresh-data", "n_clicks"),
     prevent_initial_call=True
 )
@@ -498,16 +570,31 @@ def refresh_database(n):
 
         inserted = update_dataset()
 
+        latest = pd.read_sql(
+            "SELECT MAX(time) AS latest FROM earthquakes",
+            engine
+        )
+
+        print(latest)
+
         if inserted == 0:
-            return "ℹ No new earthquakes found."
+            return (
+                "ℹ No new earthquakes found.",
+                f"🕒Last Update: {get_last_updated()}"
+            )
+
+        load_data.cache_clear()
 
         return (
-            f"✔ Added {inserted} new earthquake(s). "
-            "Refresh the page to view them."
+            f"✔ Added {inserted} new earthquake(s). Refresh the page to view them.",
+            f"🕒Last Update: {get_last_updated()}"
         )
 
     except Exception as e:
-        return f"❌ Update failed: {e}"
+        return (
+            f"❌ Update failed: {e}",
+            f"🕒Last Update: {get_last_updated()}"
+        )
 
 # ==========================================================
 # Run
