@@ -297,6 +297,19 @@ def serve_layout():
             style={"marginBottom":"20px"}
 
         ),
+        html.Div(
+
+            id="record-count",
+
+            style={
+                "marginBottom": "10px",
+                "marginLeft": "5px",
+                "fontSize": "15px",
+                "fontWeight": "600",
+                "color": "#d1d5db"
+            }
+
+        ),
 
         dbc.Card(
 
@@ -444,11 +457,13 @@ def filter_data(df, start_date, end_date, min_mag, region):
 
 @app.callback(
 
-  Output("earthquake-graph","figure"),
-  Input("date-range","start_date"),
-  Input("date-range","end_date"),
-  Input("mag-filter","value"),
-  Input("region-filter","value")
+    Output("earthquake-graph", "figure"),
+    Output("record-count", "children"),
+
+    Input("date-range", "start_date"),
+    Input("date-range", "end_date"),
+    Input("mag-filter", "value"),
+    Input("region-filter", "value")
 
 )
 
@@ -467,7 +482,9 @@ def update_graph(start_date, end_date, min_mag, region):
         region
     )
 
-    return create_figure(filtered)
+    count_text = f"📊 Showing {len(filtered):,} earthquakes"
+
+    return create_figure(filtered), count_text
 
 
 @app.callback(
